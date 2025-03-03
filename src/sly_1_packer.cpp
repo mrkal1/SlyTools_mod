@@ -7,18 +7,16 @@
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
+#include <stdio.h>
 
-constexpr bool DEBUG_MODE = false;
-
-using namespace ps3;
-
+constexpr bool DEBUG_MODE = true;
 int main(int argc, char* argv[]) {
     try {
         if (argc <= 2)
             throw std::runtime_error(std::string(argv[0]) +
                                      " <input_dir> [<output_file_wac> <output_file_wal>]");
 
-        const fs::path input_dir_path = argv[1];
+        const std::filesystem::path input_dir_path = argv[1];
 
         if (argc == 3)
             printf("Use either 1 or 3 arguments. Ignoring 2nd argument & extracting to working dir.\n");
@@ -39,19 +37,19 @@ int main(int argc, char* argv[]) {
         if (!DEBUG_MODE)
             printf("Packing files\n");
 
-        for (auto& p : fs::directory_iterator(input_dir_path)) {
+        for (auto& p : std::filesystem::directory_iterator(input_dir_path)) {
             if (!p.is_regular_file()) {
                 continue;
             }
             const auto full_path_str = p.path().string();
             const auto name_str = p.path().filename().string();
             const auto ext_size = p.path().extension().string().size();
+            const auto file_name = name_str.substr(0, name_str.size() - ext_size);
+            WACEntry wac_entry;
 
-            WacEntry wac_entry;
-
-            wac_entry.type = (WACType)name_str.back();
-            wac_entry.name = name_str.substr(0, name_str.size() - ext_size);
-            wac_entry.data = fs::file_read(full_path_str);
+            wac_entry.data = filesystem::file_read(full_path_str);
+            wac_entry.type = (WACType)file_name.back();
+            wac_entry.name = name_str.substr(0, name_str.size() - ext_size - 1);
             wac_entry.size = wac_entry.data.size();
             wac_entry.offset = wal_next_sector_offset;
 
@@ -61,6 +59,7 @@ int main(int argc, char* argv[]) {
 
             const auto name_size = wac_entry.name.size();
             wac_ofs.write(wac_entry.name.c_str(), name_size);
+
             Buffer padding0;
             padding0.resize(WAC_ENTRY_NAME_LEN - name_size);
             stream_write_buf(wac_ofs, padding0);
@@ -78,13 +77,11 @@ int main(int argc, char* argv[]) {
             padding1.resize(padding_len);
             stream_write_buf(wal_ofs, padding1);
             wal_size += padding_len;
-
             if (DEBUG_MODE)
-                printf("Writing %s at offset 0x%X size 0x%X pad 0x%X\n", name_str.c_str(),
-                       wac_entry.offset, wac_entry.size, padding_len);
-            else
-                printf(".");
-
+                             printf("Writing %s at offset 0x%X size 0x%X pad 0x%X\n", wac_entry.name.c_str(),
+                                    wac_entry.offset, wac_entry.size, padding_len);
+                         else
+                             printf(".");
             ++wac_entry_count;
         }
 

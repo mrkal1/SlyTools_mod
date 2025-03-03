@@ -1,0 +1,1 @@
+for %%a in ("*.dec") do sly_compressor.exe %%~na.dec ../fs/%%~na

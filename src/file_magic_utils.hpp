@@ -5,7 +5,7 @@
 #include <string>
 
 static std::string get_file_extension(Buffer& file_data, char type) {
-    auto ext = std::string(".sly") + type;
+    auto ext = std::string("") + type;
     const u32 magic = *reinterpret_cast<u32*>(file_data.data());
 
     if (magic == 0x47415658)  // "XVAG"
