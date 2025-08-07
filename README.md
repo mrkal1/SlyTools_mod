@@ -15,10 +15,11 @@ Compresses files to the LZSS-derived format that the official game expects for S
 ## Instructions
 ### Extracting assets
 1) Download the tools from the Releases panel on the right (or build them)
-1) Download the [psarc](https://mega.nz/file/u5c1zRCb#-D3vhHr5PdPTYhGKTYXhedgDkmvmxx75l9AayYe_Ksw) tool ([psarc wiki](https://www.psdevwiki.com/ps3/PlayStation_archive_(PSARC)#PSARC))
-1) Go to your installed game's USRDIR directory (example: `C:/rpcs3/dev_hdd0/game/NPUA80663/USRDIR`).
+2) Download the [psarc](https://mega.nz/file/u5c1zRCb#-D3vhHr5PdPTYhGKTYXhedgDkmvmxx75l9AayYe_Ksw) tool ([psarc wiki](https://www.psdevwiki.com/ps3/PlayStation_archive_(PSARC)#PSARC))
+3) Go to your installed game's USRDIR directory (example: `C:/rpcs3/dev_hdd0/game/NPUA80663/USRDIR`).
    We'll now refer to this as `$USRDIR`, replace it where appropriate.
-1) Copy `psarc.exe` there (or use the full path to it in the next command)
+4) Copy `psarc.exe` there (or use the full path to it in the next command)
+5) `psarc extract --input=Sly1.psarc --to=.`
 
 TODO: Finish this section
 
