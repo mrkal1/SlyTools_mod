@@ -1,5 +1,6 @@
 #include "fs.hpp"
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <future>
@@ -37,7 +38,7 @@ int decompress_file(const std::filesystem::path& file) {
     uint8_t bits   = 0;
 
     auto flush_window = [&](size_t count) {
-        std::memcpy(output_data.data() + out_write_pos, window.data(), count);
+        memcpy(output_data.data() + out_write_pos, window.data(), count);
         out_write_pos += count;
     };
 
