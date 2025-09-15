@@ -29,14 +29,17 @@ int main(int argc, char* argv[]) {
             output_path = argv[2];
         std::filesystem::create_directory(output_path);
 
-        const auto wac_fp = fopen(wac_path.string().c_str(), "rb");
-        if (wac_fp == NULL)
+        errno_t err;
+        FILE* wac_fp = nullptr;
+        err = fopen_s(&wac_fp, wac_path.string().c_str(), "rb");
+        if (err == NULL)
             throw std::runtime_error("Failed to open: " + wac_path.string());
 
         const auto wac_entries = parse_wac(wac_fp);
 
-        const auto wal_fp = fopen(wal_path_str.c_str(), "rb");
-        if (wal_fp == NULL)
+        FILE* wal_fp = nullptr;
+        err = fopen_s(&wal_fp, wal_path_str.c_str(), "rb");
+        if (err == NULL)
             throw std::runtime_error("wal_fp == NULL");
 
         Buffer file_data;
@@ -53,14 +56,15 @@ int main(int argc, char* argv[]) {
             const auto extension = get_file_extension(file_data, (char)entry.type);
             const auto out_path = output_path / (entry.name + extension);
 
-            const auto out_fp = fopen(out_path.string().c_str(), "wb");
-            if (out_fp == NULL)
+            FILE* out_fp = nullptr;
+            err = fopen_s(&out_fp, out_path.string().c_str(), "wb");
+            if (err == NULL)
                 throw std::runtime_error("out_fp == NULL");
 
             fwrite((const char*)file_data.data(), entry.size, 1, out_fp);
 
             if (DEBUG_MODE)
-                printf("Wrote %s offset 0x%08lX size 0x%08lX\n",
+                printf("Wrote %s offset 0x%08zX size 0x%08zX\n",
                        out_path.string().c_str(),
                        entry.offset * SECTOR_SIZE, file_data.size());
 
@@ -71,7 +75,12 @@ int main(int argc, char* argv[]) {
         fclose(wac_fp);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
-        std::cerr << "errno: " << strerror(errno) << std::endl;
+        char errbuf[256];
+        if (!strerror_s(errbuf, sizeof(errbuf), errno))
+            std::cerr << "errno: " << errbuf << '\n';
+        else
+            std::cerr << "errno: (unknown error)\n";
+        
         return 1;
     }
 

@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
             stream_write_buf(wal_ofs, padding1);
             wal_size += padding_len;
             if (DEBUG_MODE)
-                             printf("Writing %s at offset 0x%X size 0x%X pad 0x%X\n", wac_entry.name.c_str(),
+                             printf("Writing %s at offset 0x%X size 0x%X pad 0x%zX\n", wac_entry.name.c_str(),
                                     wac_entry.offset, wac_entry.size, padding_len);
                          else
                              printf(".");

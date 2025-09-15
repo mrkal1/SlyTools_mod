@@ -63,7 +63,7 @@ static WACEntries parse_wac(T& wac_data) {
         entry.size = size;
 
         if (DEBUG_MODE_)
-            printf(" - %24s type %c offset 0x%08X (0x%016lX) size 0x%08X\n", name, (char)type, offset,
+            printf(" - %24s type %c offset 0x%08X (0x%016zX) size 0x%08X\n", name, (char)type, offset,
                    offset * SECTOR_SIZE, size);
 
         wac_entries.push_back(entry);
