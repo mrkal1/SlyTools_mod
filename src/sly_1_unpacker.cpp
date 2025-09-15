@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
         #if defined(_WIN32)
             errno_t err;
             err = fopen_s(&wac_fp, wac_path.string().c_str(), "rb");
-            if (err == NULL)
+            if (err != 0 || wac_fp == nullptr)
                 throw std::runtime_error("Failed to open: " + wac_path.string());
         #else
             wac_fp = fopen(wac_path.string().c_str(), "rb");
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         FILE* wal_fp = nullptr;
         #if defined(_WIN32)
             err = fopen_s(&wal_fp, wal_path_str.c_str(), "rb");
-            if (err == NULL)
+            if (err != 0 || wal_fp == nullptr)
                 throw std::runtime_error("wal_fp == NULL");
         #else
             wal_fp = fopen(wal_path_str.c_str(), "rb");
@@ -64,10 +64,7 @@ int main(int argc, char* argv[]) {
             #ifdef _WIN64
             _fseeki64(wal_fp, entry.offset * SECTOR_SIZE, SEEK_SET);
             #endif
-            if (fread(file_data.data(), entry.size, 1, wal_fp) != 1) {
-                perror("fread failed");
-                return 1;
-            }
+            fread(file_data.data(), entry.size, 1, wal_fp);
 
             const auto extension = get_file_extension(file_data, (char)entry.type);
             const auto out_path = output_path / (entry.name + extension);
@@ -75,7 +72,7 @@ int main(int argc, char* argv[]) {
             FILE* out_fp = nullptr;
             #if defined(_WIN32)
                 err = fopen_s(&out_fp, out_path.string().c_str(), "wb");
-                if (err == NULL)
+                if (err != 0 || out_fp == nullptr)
                     throw std::runtime_error("out_fp == NULL");
             #else
                 out_fp = fopen(out_path.string().c_str(), "wb");
