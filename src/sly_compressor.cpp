@@ -84,18 +84,17 @@ int main(int argc, char* argv[]) {
 
         u32 input_i{};
         while (input_i < input_size) {
-            u8 bits{};
-
+            u8 bits = 0;
             Buffer output_chunk_data;
 
             for (u32 bits_i = 0; bits_i < 8; ++bits_i) {
+                if (input_i >= input_size) break;
+
                 if (const auto result = sliding_dict.look_up(input_data, input_i)) {
                     // TODO
                 } else {
                     const u8 src = input_data[input_i++];
-
                     output_chunk_data.push_back(src);
-
                     bits |= 1;
                 }
 
@@ -121,5 +120,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    printf("Finished\n");
     return 0;
 }
