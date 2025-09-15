@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
             if (err == NULL)
                 throw std::runtime_error("wal_fp == NULL");
         #else
-            wal_fp = fopen(wal_path_str.string().c_str(), "rb");
+            wal_fp = fopen(wal_path_str.c_str(), "rb");
             if (wal_fp == NULL)
                 throw std::runtime_error("wal_fp == NULL");
         #endif
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
                     throw std::runtime_error("out_fp == NULL");
             #else
                 out_fp = fopen(out_path.string().c_str(), "wb");
-                if (err == NULL)
+                if (out_fp == NULL)
                     throw std::runtime_error("out_fp == NULL");
             #endif
 
