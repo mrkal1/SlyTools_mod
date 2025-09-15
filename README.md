@@ -11,6 +11,7 @@ TODO: Write a description
 
 ### Compressor
 Compresses files to the LZSS-derived format that the official game expects for Sly level files.
+Compressor seems to be broken with newer compiler (at least I hope it's because of the compiler).
 
 ## Instructions
 ### Extracting assets
