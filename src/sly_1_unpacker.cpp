@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
+#include <cstring>
 
 constexpr bool DEBUG_MODE = false;
 
@@ -29,18 +30,30 @@ int main(int argc, char* argv[]) {
             output_path = argv[2];
         std::filesystem::create_directory(output_path);
 
-        errno_t err;
         FILE* wac_fp = nullptr;
-        err = fopen_s(&wac_fp, wac_path.string().c_str(), "rb");
-        if (err == NULL)
-            throw std::runtime_error("Failed to open: " + wac_path.string());
+        #if defined(_WIN32)
+            errno_t err;
+            err = fopen_s(&wac_fp, wac_path.string().c_str(), "rb");
+            if (err == NULL)
+                throw std::runtime_error("Failed to open: " + wac_path.string());
+        #else
+            wac_fp = fopen(wac_path.string().c_str(), "rb");
+            if (wac_fp == NULL)
+                throw std::runtime_error("Failed to open: " + wac_path.string());
+        #endif
 
         const auto wac_entries = parse_wac(wac_fp);
 
         FILE* wal_fp = nullptr;
-        err = fopen_s(&wal_fp, wal_path_str.c_str(), "rb");
-        if (err == NULL)
-            throw std::runtime_error("wal_fp == NULL");
+        #if defined(_WIN32)
+            err = fopen_s(&wal_fp, wal_path_str.c_str(), "rb");
+            if (err == NULL)
+                throw std::runtime_error("wal_fp == NULL");
+        #else
+            wal_fp = fopen(wal_path_str.string().c_str(), "rb");
+            if (wal_fp == NULL)
+                throw std::runtime_error("wal_fp == NULL");
+        #endif
 
         Buffer file_data;
         for (const auto& entry : wac_entries) {
@@ -51,15 +64,24 @@ int main(int argc, char* argv[]) {
             #ifdef _WIN64
             _fseeki64(wal_fp, entry.offset * SECTOR_SIZE, SEEK_SET);
             #endif
-            fread(file_data.data(), entry.size, 1, wal_fp);
+            if (fread(file_data.data(), entry.size, 1, wal_fp) != 1) {
+                perror("fread failed");
+                return 1;
+            }
 
             const auto extension = get_file_extension(file_data, (char)entry.type);
             const auto out_path = output_path / (entry.name + extension);
 
             FILE* out_fp = nullptr;
-            err = fopen_s(&out_fp, out_path.string().c_str(), "wb");
-            if (err == NULL)
-                throw std::runtime_error("out_fp == NULL");
+            #if defined(_WIN32)
+                err = fopen_s(&out_fp, out_path.string().c_str(), "wb");
+                if (err == NULL)
+                    throw std::runtime_error("out_fp == NULL");
+            #else
+                out_fp = fopen(out_path.string().c_str(), "wb");
+                if (err == NULL)
+                    throw std::runtime_error("out_fp == NULL");
+            #endif
 
             fwrite((const char*)file_data.data(), entry.size, 1, out_fp);
 
@@ -76,8 +98,13 @@ int main(int argc, char* argv[]) {
     } catch (const std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         char errbuf[256];
-        if (!strerror_s(errbuf, sizeof(errbuf), errno))
-            std::cerr << "errno: " << errbuf << '\n';
+        #if defined(_WIN32)
+            if (!strerror_s(errbuf, sizeof(errbuf), errno))
+                std::cerr << "errno: " << errbuf << '\n';
+        #else
+            if (!strerror_r(errno, errbuf, sizeof(errbuf)))
+                std::cerr << "errno: " << errbuf << '\n';
+        #endif
         else
             std::cerr << "errno: (unknown error)\n";
         
