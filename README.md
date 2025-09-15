@@ -29,7 +29,9 @@ TODO: Finish this section
 1.2) Create a file list txt and add your dummy file to the list
 1.3) Run this command `psarc.exe create --inputfile=filelist.txt --output=Sly1.psarc`
 2) Game proceeds to skip the file and makes your life easier as you don't need to repack psarc everytime (this is slow process)
-3) So now you can place SLY1.WAC and SLY1.WAL into Sly1 folder (inside USRDIR\Sly1)
+3) So now you can place SLY.WAC and SLY.WAL into Sly1 folder (inside USRDIR\Sly1)
+4) You can delete SLY_F.WAC and SLY_S.WAC files (they are unused by the game)
+5) After unpacking SLY.WAC, you can run this powershell command `Get-ChildItem | Where-Object { $_.Name.EndsWith('_fW') -or $_.Name.EndsWith('_sW') } | Remove-Item` inside the extracted folder to remove unused files and save space
 
 ## Special Thanks
 [The Original SlyTools](https://github.com/VelocityRa/SlyTools)
