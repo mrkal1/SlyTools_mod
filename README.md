@@ -11,7 +11,7 @@ TODO: Write a description
 
 ### Compressor
 Compresses files to the LZSS-derived format that the official game expects for Sly level files.
-Compressor seems to be broken with newer compiler (at least I hope it's because of the compiler).
+TODO: Fix compressor causing larger files compared to original.
 
 ## Instructions
 ### Extracting assets
@@ -25,10 +25,10 @@ Compressor seems to be broken with newer compiler (at least I hope it's because 
 TODO: Finish this section
 
 ## Useful knowledge
-1) Replace Sly1.psarc with dummy Sly1.psarc (as an example with Finnish dub mod, there's kok.txt only inside the Sly1.psarc)
-1.1) Create a empty file (example dummy.txt)
-1.2) Create a file list txt and add your dummy file to the list
-1.3) Run this command `psarc.exe create --inputfile=filelist.txt --output=Sly1.psarc`
+1) Replace Sly1.psarc with dummy Sly1.psarc (as an example with Finnish dub mod, there's kok.txt only inside the Sly1.psarc)  
+1.1) Create a empty file (example dummy.txt)  
+1.2) Create a file list txt and add your dummy file to the list  
+1.3) Run this command `psarc.exe create --inputfile=filelist.txt --output=Sly1.psarc`  
 2) Game proceeds to skip the file and makes your life easier as you don't need to repack psarc everytime (this is slow process)
 3) So now you can place SLY.WAC and SLY.WAL into Sly1 folder (inside USRDIR\Sly1)
 4) You can delete SLY_F.WAC and SLY_S.WAC files (they are unused by the game)
