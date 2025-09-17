@@ -23,40 +23,37 @@ std::vector<std::filesystem::path> find_files_ending_with_W(const std::filesyste
 int decompress_file(const std::filesystem::path& file) {
     const auto input_data = filesystem::file_read(file);
     const size_t input_size = input_data.size();
-    if (input_size == 0) {
+    if (input_data.empty()) {
         std::cerr << "Empty input file: " << file << "\n";
         return 1;
     }
 
-    std::vector<unsigned char> output_data;
-    output_data.resize(input_size * 4);
-    size_t out_write_pos = 0;
+    std::vector<uint8_t> output_data;
+    output_data.reserve(input_size * 4);
 
-    std::array<unsigned char, CHUNK_SIZE * 2> window{};
+    std::array<uint8_t, CHUNK_SIZE> window{};
     size_t win_pos = 0;
-    size_t in_pos  = 0;
-    uint8_t bits   = 0;
+    size_t in_pos = 0;
 
     auto flush_window = [&](size_t count) {
-        memcpy(output_data.data() + out_write_pos, window.data(), count);
-        out_write_pos += count;
+        output_data.insert(output_data.end(), window.begin(), window.begin() + count);
     };
 
     while (in_pos < input_size) {
-        bits = input_data[in_pos++];
-        if (in_pos >= input_size) break;
-
-        for (uint32_t i = 0; i < 8 && in_pos < input_size; ++i) {
-            uint16_t src = input_data[in_pos++];
+        uint8_t bits = input_data[in_pos++];
+        for (int i = 0; i < 8 && in_pos < input_size; ++i) {
             if (bits & 1) {
-                window[win_pos++] = static_cast<unsigned char>(src);
+                uint8_t literal = input_data[in_pos++];
+                window[win_pos] = literal;
+                ++win_pos;
                 if (win_pos == CHUNK_SIZE) { flush_window(CHUNK_SIZE); win_pos = 0; }
-            } else {
-                if (in_pos >= input_size) break;
-                src |= static_cast<uint16_t>(input_data[in_pos++]) << 8;
-                int16_t len = static_cast<int16_t>((src >> 13) + 2);
-                int16_t off = static_cast<int16_t>(src & CHUNK_SIZE_MASK);
-                while (len-- >= 0) {
+            } else { // match
+                uint16_t lo = input_data[in_pos++];
+                uint16_t hi = input_data[in_pos++];
+                uint16_t token = lo | (hi << 8);
+                int16_t len = (token >> 13) + 3;
+                int16_t off = token & CHUNK_SIZE_MASK;
+                while (len-- > 0) {
                     window[win_pos] = window[off];
                     ++win_pos;
                     off = (off + 1) & CHUNK_SIZE_MASK;
@@ -66,9 +63,9 @@ int decompress_file(const std::filesystem::path& file) {
             bits >>= 1;
         }
     }
+
     if (win_pos > 0) flush_window(win_pos);
 
-    output_data.resize(out_write_pos);
     std::filesystem::path out_path = decrypted_folder / file.filename();
     out_path += ".dec";
     std::ofstream out(out_path, std::ios::binary);
@@ -76,7 +73,7 @@ int decompress_file(const std::filesystem::path& file) {
         std::cerr << "Failed to open output file: " << out_path << "\n";
         return 1;
     }
-    out.write(reinterpret_cast<const char*>(output_data.data()), static_cast<std::streamsize>(out_write_pos));
+    out.write(reinterpret_cast<const char*>(output_data.data()), static_cast<std::streamsize>(output_data.size()));
     return 0;
 }
 
